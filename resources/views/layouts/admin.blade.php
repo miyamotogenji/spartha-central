@@ -184,12 +184,50 @@
        style="background:linear-gradient(180deg,#060b18 0%,#04080f 100%);border-right:1px solid rgba(30,42,66,.5);box-shadow:4px 0 32px rgba(0,0,0,.5)">
 
     {{-- Brand --}}
-    <div class="flex items-center px-4 py-4" style="border-bottom:1px solid rgba(30,42,66,.5)">
-        <img src="{{ asset('logo.png') }}" alt="ASOIINFO Logo"
-             style="height:58px;width:auto;object-fit:contain;
-                    mix-blend-mode:screen;
-                    filter:drop-shadow(0 0 18px rgba(99,102,241,.8)) drop-shadow(0 0 6px rgba(168,85,247,.4))">
+    <div class="flex items-center gap-3 px-4 py-4" style="border-bottom:1px solid rgba(30,42,66,.5)">
+
+        {{-- Animated gradient logo mark --}}
+        <div style="
+            width:42px;height:42px;border-radius:14px;flex-shrink:0;
+            background:linear-gradient(145deg,#4f46e5 0%,#7c3aed 52%,#a855f7 100%);
+            display:flex;align-items:center;justify-content:center;
+            box-shadow:0 6px 24px rgba(124,58,237,.58),inset 0 1.5px 0 rgba(255,255,255,.22);
+            position:relative;overflow:hidden;">
+            {{-- shimmer --}}
+            <div style="
+                position:absolute;top:0;left:-60%;width:40%;height:100%;
+                background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+                transform:skewX(-14deg);
+                animation:logoShim 3.5s ease-in-out infinite;"></div>
+            <svg width="24" height="24" viewBox="0 0 48 48" fill="none">
+                <defs>
+                    <linearGradient id="sg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#c4b5fd"/>
+                        <stop offset="100%" stop-color="#67e8f9"/>
+                    </linearGradient>
+                </defs>
+                <path d="M22 14C17.582 14 14 17.582 14 22C14 26.418 17.582 30 22 30L26 30C26.552 30 27 29.552 27 29C27 28.448 26.552 28 26 28L22 28C18.686 28 16 25.314 16 22C16 18.686 18.686 16 22 16L26 16C26.552 16 27 15.552 27 15C27 14.448 26.552 14 26 14L22 14Z" fill="url(#sg1)"/>
+                <path d="M26 18C30.418 18 34 21.582 34 26C34 30.418 30.418 34 26 34L22 34C21.448 34 21 33.552 21 33C21 32.448 21.448 32 22 32L26 32C29.314 32 32 29.314 32 26C32 22.686 29.314 20 26 20L22 20C21.448 20 21 19.552 21 19C21 18.448 21.448 18 22 18L26 18Z" fill="url(#sg1)"/>
+                <rect x="20" y="21" width="8" height="6" rx="3" fill="url(#sg1)" opacity=".8"/>
+            </svg>
+        </div>
+
+        {{-- Wordmark --}}
+        <div>
+            <div style="
+                font-family:'Space Grotesk','Sora',sans-serif;
+                font-size:1.05rem;font-weight:700;letter-spacing:.08em;
+                background:linear-gradient(90deg,#c4b5fd,#a5b4fc,#67e8f9);
+                -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                background-clip:text;line-height:1.2;">ASOIINFO</div>
+            <div style="font-size:.62rem;color:#1f2937;letter-spacing:.06em;font-weight:500;margin-top:1px">Plataforma Multiempresa</div>
+        </div>
     </div>
+
+    <style>
+    @keyframes logoShim{0%{left:-60%}55%,100%{left:120%}}
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap');
+    </style>
 
     {{-- Nav --}}
     <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">

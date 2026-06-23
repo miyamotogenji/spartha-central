@@ -211,8 +211,8 @@ html,body{height:100%;overflow:hidden;font-family:'Space Grotesk',sans-serif;col
   margin-top:28px;animation:fadeUp .6s .28s ease both;
 }
 .pill{
-  display:inline-flex;align-items:center;gap:11px;
-  padding:11px 24px 11px 10px;border-radius:100px;
+  display:inline-flex;align-items:center;gap:12px;
+  padding:8px 22px 8px 8px;border-radius:100px;
   background:rgba(7,4,24,.92);
   border:1.5px solid rgba(38,30,80,.95);
   backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
@@ -227,12 +227,12 @@ html,body{height:100%;overflow:hidden;font-family:'Space Grotesk',sans-serif;col
 .prep::after{background:#60a5fa;box-shadow:0 0 10px #60a5fa,0 0 24px rgba(96,165,250,.6)}
 .pcrm::after{background:#c084fc;box-shadow:0 0 10px #c084fc,0 0 24px rgba(192,132,252,.6)}
 
-/* Icon container — big, rounded square */
+/* Icon container — extra big */
 .pico{
-  width:42px;height:42px;border-radius:14px;
+  width:48px;height:48px;border-radius:16px;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
-.pico svg{width:24px;height:24px}
+.pico svg{width:28px;height:28px}
 
 /* Copyright */
 .copy{margin-top:20px;text-align:center;animation:fadeUp .6s .4s ease both}
@@ -417,20 +417,20 @@ html,body{height:100%;overflow:hidden;font-family:'Space Grotesk',sans-serif;col
     sat:Math.random()<.14?85:0
   });
 
-  /* 10 aurora blobs */
+  /* 10 aurora blobs — boosted opacity & size */
   var B=[
     /* Left — violet/indigo column */
-    {x:.10,y:.12,rx:.22,ry:.60,h:268,s:92,a:.92,d:.85},
-    {x:.07,y:.40,rx:.15,ry:.44,h:272,s:88,a:.70,d:1.20},
-    {x:.13,y:.68,rx:.12,ry:.34,h:265,s:84,a:.52,d:.70},
-    {x:.21,y:.26,rx:.26,ry:.46,h:260,s:74,a:.32,d:1.50},
-    {x:.05,y:.82,rx:.10,ry:.24,h:276,s:80,a:.38,d:.90},
+    {x:.10,y:.12,rx:.26,ry:.65,h:268,s:95,a:1.00,d:.85},
+    {x:.07,y:.42,rx:.18,ry:.48,h:272,s:90,a:.80,d:1.20},
+    {x:.13,y:.70,rx:.14,ry:.38,h:265,s:86,a:.62,d:.70},
+    {x:.22,y:.28,rx:.28,ry:.50,h:260,s:76,a:.40,d:1.50},
+    {x:.05,y:.84,rx:.12,ry:.28,h:276,s:82,a:.48,d:.90},
     /* Right — cyan/teal column */
-    {x:.90,y:.09,rx:.19,ry:.52,h:186,s:94,a:.86,d:.90},
-    {x:.94,y:.35,rx:.14,ry:.38,h:183,s:90,a:.66,d:1.30},
-    {x:.97,y:.62,rx:.11,ry:.30,h:189,s:86,a:.48,d:.72},
-    {x:.84,y:.19,rx:.22,ry:.40,h:192,s:78,a:.30,d:1.55},
-    {x:.96,y:.80,rx:.09,ry:.22,h:185,s:82,a:.36,d:.88},
+    {x:.90,y:.09,rx:.22,ry:.56,h:186,s:96,a:.95,d:.90},
+    {x:.94,y:.36,rx:.16,ry:.42,h:183,s:92,a:.76,d:1.30},
+    {x:.97,y:.63,rx:.13,ry:.34,h:189,s:88,a:.58,d:.72},
+    {x:.84,y:.20,rx:.24,ry:.44,h:192,s:80,a:.38,d:1.55},
+    {x:.96,y:.82,rx:.11,ry:.26,h:185,s:84,a:.46,d:.88},
   ];
 
   function grid(){
