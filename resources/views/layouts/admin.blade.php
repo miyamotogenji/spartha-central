@@ -9,7 +9,7 @@
     {{-- Premium fonts: Plus Jakarta Sans + JetBrains Mono --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -17,8 +17,8 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
-                        mono: ['"Space Mono"', 'monospace'],
+                        sans: ['"Sora"', 'system-ui', 'sans-serif'],
+                        mono: ['"Fira Code"', 'monospace'],
                     },
                     colors: {
                         base: { 950: '#060b14', 900: '#090e1a', 800: '#0f1623', 700: '#151d2e', 600: '#1c2640' },
@@ -122,7 +122,7 @@
     </style>
     @stack('styles')
 </head>
-<body class="h-full bg-base-950 text-gray-100" style="font-family:'Space Grotesk',system-ui,sans-serif"
+<body class="h-full bg-base-950 text-gray-100" style="font-family:'Sora',system-ui,sans-serif"
       x-data="{ sidebarOpen: false, notifOpen: false }">
 
 {{-- Mobile overlay --}}
