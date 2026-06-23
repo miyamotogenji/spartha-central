@@ -125,6 +125,10 @@ $latest       = LegalEntity::with('businessGroup')->latest()->limit(7)->get();
         <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#6366f1;letter-spacing:.08em">TOTAL SUCURSALES</p>
         <p class="text-4xl font-extrabold text-white tracking-tight">{{ $branchCount }}</p>
         <p class="text-xs mt-1.5" style="color:#374151">Sucursales activas</p>
+        <div class="flex items-center gap-2 mt-3 pt-3" style="border-top:1px solid rgba(30,42,66,.5)">
+            <span style="font-size:.72rem;color:#6366f1;font-weight:600">↑ activas</span>
+            <span style="font-size:.68rem;color:#1f2937">vs. mes anterior</span>
+        </div>
     </div>
 
     {{-- Usuarios --}}
@@ -145,6 +149,10 @@ $latest       = LegalEntity::with('businessGroup')->latest()->limit(7)->get();
         <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#10b981;letter-spacing:.08em">USUARIOS</p>
         <p class="text-4xl font-extrabold text-white tracking-tight">{{ $userCount }}</p>
         <p class="text-xs mt-1.5" style="color:#374151">Usuarios activos</p>
+        <div class="flex items-center gap-2 mt-3 pt-3" style="border-top:1px solid rgba(30,42,66,.5)">
+            <span style="font-size:.72rem;color:#10b981;font-weight:600">↑ 6 roles</span>
+            <span style="font-size:.68rem;color:#1f2937">RBAC configurado</span>
+        </div>
     </div>
 
     {{-- Grupos --}}
@@ -165,6 +173,10 @@ $latest       = LegalEntity::with('businessGroup')->latest()->limit(7)->get();
         <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#f59e0b;letter-spacing:.08em">GRUPOS</p>
         <p class="text-4xl font-extrabold text-white tracking-tight">{{ $groupCount }}</p>
         <p class="text-xs mt-1.5" style="color:#374151">Grupos definidos</p>
+        <div class="flex items-center gap-2 mt-3 pt-3" style="border-top:1px solid rgba(30,42,66,.5)">
+            <span style="font-size:.72rem;color:#f59e0b;font-weight:600">→ 0%</span>
+            <span style="font-size:.68rem;color:#1f2937">vs. mes anterior</span>
+        </div>
     </div>
 
     {{-- Bloqueadas --}}
@@ -185,6 +197,10 @@ $latest       = LegalEntity::with('businessGroup')->latest()->limit(7)->get();
         <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#ef4444;letter-spacing:.08em">BLOQUEADAS</p>
         <p class="text-4xl font-extrabold text-white tracking-tight">{{ $blockedCount }}</p>
         <p class="text-xs mt-1.5" style="color:#374151">Sucursales bloqueadas</p>
+        <div class="flex items-center gap-2 mt-3 pt-3" style="border-top:1px solid rgba(30,42,66,.5)">
+            <span style="font-size:.72rem;color:#ef4444;font-weight:600">↓ 50%</span>
+            <span style="font-size:.68rem;color:#1f2937">vs. mes anterior</span>
+        </div>
     </div>
 </div>
 
