@@ -20,6 +20,9 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
 # Copy source
 COPY . .
 
+# Regenerate optimized autoloader now that app/ classes exist
+RUN composer dump-autoload --optimize --no-interaction --no-scripts
+
 # Pre-generate bootstrap caches (uses dummy .env so artisan can bootstrap)
 RUN cp .env.example .env \
     && php artisan package:discover --ansi || true \
