@@ -3,12 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use PragmaRX\Google2FALaravel\Support\Authenticator;
 use PragmaRX\Google2FA\Google2FA;
-use BaconQrCode\Renderer\ImageRenderer;
-use BaconQrCode\Renderer\Image\SvgImageBackEnd;
-use BaconQrCode\Renderer\RendererStyle\RendererStyle;
-use BaconQrCode\Writer;
 
 class TwoFactorController extends Controller
 {
@@ -21,14 +16,20 @@ class TwoFactorController extends Controller
 
     public function show()
     {
-        $user = auth()->user();
-        $qrCode = null;
+        $user   = auth()->user();
+        $qrUrl  = null;
+        $secret = null;
 
         if ($user->two_factor_secret && !$user->two_factor_confirmed) {
-            $qrCode = $this->generateQrCode($user);
+            $secret = $user->two_factor_secret;
+            $qrUrl  = $this->g2fa->getQRCodeUrl(
+                config('app.name', 'ASOIINFO'),
+                $user->email,
+                $secret
+            );
         }
 
-        return view('admin.two-factor.setup', compact('user', 'qrCode'));
+        return view('admin.two-factor.setup', compact('user', 'qrUrl', 'secret'));
     }
 
     public function enable(Request $request)
@@ -41,13 +42,19 @@ class TwoFactorController extends Controller
             $user->refresh();
         }
 
-        $qrCode = $this->generateQrCode($user);
-        return view('admin.two-factor.setup', compact('user', 'qrCode'));
+        $secret = $user->two_factor_secret;
+        $qrUrl  = $this->g2fa->getQRCodeUrl(
+            config('app.name', 'ASOIINFO'),
+            $user->email,
+            $secret
+        );
+
+        return view('admin.two-factor.setup', compact('user', 'qrUrl', 'secret'));
     }
 
     public function confirm(Request $request)
     {
-        $request->validate(['code' => 'required|string|size:6']);
+        $request->validate(['code' => 'required|string|min:6|max:8']);
         $user = auth()->user();
 
         if (!$user->two_factor_secret) {
@@ -56,11 +63,11 @@ class TwoFactorController extends Controller
 
         $valid = $this->g2fa->verifyKey($user->two_factor_secret, $request->code);
         if (!$valid) {
-            return back()->withErrors(['code' => 'Código incorrecto. Verifica tu aplicación.']);
+            return back()->withErrors(['code' => 'Código incorrecto. Verifica tu aplicación autenticadora.']);
         }
 
         $user->update(['two_factor_confirmed' => true]);
-        return redirect()->route('admin.two-factor.show')->with('success', '2FA activado correctamente.');
+        return redirect()->route('admin.two-factor.show')->with('success', '2FA activado correctamente. Tu cuenta ahora está protegida.');
     }
 
     public function disable(Request $request)
@@ -94,21 +101,5 @@ class TwoFactorController extends Controller
 
         session(['2fa_verified' => true]);
         return redirect()->intended(route('admin.dashboard'));
-    }
-
-    private function generateQrCode($user): string
-    {
-        $otpAuth = $this->g2fa->getQRCodeUrl(
-            config('app.name', 'ASOIINFO'),
-            $user->email,
-            $user->two_factor_secret
-        );
-
-        $renderer = new ImageRenderer(
-            new RendererStyle(200),
-            new SvgImageBackEnd()
-        );
-        $writer = new Writer($renderer);
-        return base64_encode($writer->writeString($otpAuth));
     }
 }
