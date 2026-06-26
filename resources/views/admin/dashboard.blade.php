@@ -1,363 +1,285 @@
 @extends('layouts.admin')
-@section('title', 'Dashboard')
-@section('breadcrumb', 'Panel → Dashboard')
+@section('title', 'Dashboard del Dueño')
+@section('breadcrumb', 'Vista ejecutiva — resumen general de su negocio')
 
-@push('styles')
-<style>
-/* Donut chart */
-.donut-ring { transform: rotate(-90deg); transform-origin: 50% 50%; }
-.kpi-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.kpi-icon svg { width:20px; height:20px; }
-.trend-up   { color:#10b981; font-size:.75rem; font-weight:600; }
-.trend-down { color:#ef4444; font-size:.75rem; font-weight:600; }
-</style>
-@endpush
+@php
+    $dinero = fn ($valor) => '$ '.number_format((float) $valor, 2);
+    $colores = ['#2563eb', '#22c55e', '#f59e0b', '#8b5cf6', '#06b6d4', '#f43f5e'];
+    $segmentos = [];
+    $acumulado = 0;
+
+    foreach ($ventasPorSucursal as $indice => $sucursal) {
+        $porcentaje = $total > 0 ? ((float) $sucursal->total / $total) * 100 : 0;
+        $segmentos[] = $colores[$indice % count($colores)].' '.$acumulado.'% '.($acumulado + $porcentaje).'%';
+        $acumulado += $porcentaje;
+    }
+
+    $fondoDona = $segmentos ? 'conic-gradient('.implode(', ', $segmentos).')' : '#e2e8f0';
+    $etiquetaPeriodo = $desde->isSameMonth($hasta) && $desde->isStartOfMonth()
+        ? ucfirst($desde->locale('es')->isoFormat('MMMM YYYY'))
+        : $desde->format('d/m/Y').' - '.$hasta->format('d/m/Y');
+@endphp
 
 @section('content')
-{{-- ─── Header ─────────────────────────────────────────────────────────────── --}}
-<div class="flex items-start justify-between mb-6">
-    <div>
-        <p class="text-xs font-600 text-indigo-500 uppercase tracking-widest mb-1" style="font-weight:600;letter-spacing:.1em">Vista Ejecutiva</p>
-        <h1 class="text-2xl font-800 text-gray-900 leading-tight" style="font-weight:800">Dashboard</h1>
-        <p class="text-sm text-gray-400 mt-0.5">Resumen general de tu negocio</p>
-    </div>
-    <div class="flex items-center gap-2">
-        <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-            {{ now()->locale('es')->isoFormat('01/MM/YYYY') }} — {{ now()->locale('es')->isoFormat('DD/MM/YYYY') }}
-        </div>
-        <button onclick="location.reload()" class="btn-secondary btn-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            Actualizar
-        </button>
-    </div>
-</div>
+<div class="p-4 sm:p-6 lg:p-8 space-y-6" x-data="{ filtros: false }">
 
-{{-- ─── KPI Cards ──────────────────────────────────────────────────────────── --}}
-<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
-
-    {{-- Grupos activos --}}
-    <div class="stat-card flex flex-col gap-2 hover:shadow-md transition-shadow cursor-pointer" onclick="window.location='{{ route('admin.grupos.index') }}'">
-        <div class="flex items-center justify-between">
-            <div class="kpi-icon" style="background:#eef2ff">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
-            </div>
-            <span class="text-xs text-gray-400">Hoy</span>
-        </div>
+    {{-- Header --}}
+    <section class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4">
         <div>
-            <div class="text-2xl font-800 text-gray-900" style="font-weight:800">{{ $stats['groups'] }}</div>
-            <div class="text-xs text-gray-500 font-500" style="font-weight:500">Grupos Activos</div>
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">Vista ejecutiva</p>
+            <h1 class="mt-1 text-2xl sm:text-3xl font-bold text-slate-900">Dashboard del Dueño</h1>
+            <p class="mt-1 text-sm text-slate-500">Resumen general de su negocio</p>
         </div>
-    </div>
-
-    {{-- Sucursales activas --}}
-    <div class="stat-card flex flex-col gap-2 hover:shadow-md transition-shadow cursor-pointer" onclick="window.location='{{ route('admin.sucursales.index') }}'">
-        <div class="flex items-center justify-between">
-            <div class="kpi-icon" style="background:#f0fdf4">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+        <div class="flex flex-wrap items-center gap-2">
+            <div class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-600 shadow-sm">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3M5 11h14M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/></svg>
+                {{ $desde->format('d/m/Y') }} - {{ $hasta->format('d/m/Y') }}
             </div>
-            <span class="text-xs text-gray-400">{{ $stats['branches'] }} total</span>
+            <button type="button" @click="filtros = !filtros" class="btn-secondary">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 4h18l-7 8v6l-4 2v-8L3 4Z"/></svg>
+                Filtros
+            </button>
+            <a href="{{ route('admin.dashboard', request()->query()) }}" class="btn-secondary">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7"/></svg>
+                Actualizar
+            </a>
         </div>
-        <div>
-            <div class="text-2xl font-800 text-gray-900" style="font-weight:800">{{ $stats['branches'] }}</div>
-            <div class="text-xs text-gray-500 font-500" style="font-weight:500">Sucursales Activas</div>
-        </div>
-    </div>
+    </section>
 
-    {{-- Total por cobrar --}}
-    <div class="stat-card flex flex-col gap-2 hover:shadow-md transition-shadow cursor-pointer" onclick="window.location='{{ route('admin.cxc.index') }}'">
-        <div class="flex items-center justify-between">
-            <div class="kpi-icon" style="background:#fffbeb">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    {{-- Filters --}}
+    <form x-show="filtros" x-cloak method="GET" action="{{ route('admin.dashboard') }}" class="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2 xl:grid-cols-5">
+        <label class="text-sm font-medium text-slate-600">Desde
+            <input type="date" name="desde" value="{{ $desde->toDateString() }}" class="mt-1 form-input">
+        </label>
+        <label class="text-sm font-medium text-slate-600">Hasta
+            <input type="date" name="hasta" value="{{ $hasta->toDateString() }}" class="mt-1 form-input">
+        </label>
+        <label class="text-sm font-medium text-slate-600">Grupo
+            <select name="group_id" class="mt-1 form-select">
+                <option value="">Todos</option>
+                @foreach($grupos as $grupo)
+                    <option value="{{ $grupo->id }}" @selected(request('group_id') == $grupo->id)>{{ $grupo->name }}</option>
+                @endforeach
+            </select>
+        </label>
+        <label class="text-sm font-medium text-slate-600">Sucursal
+            <select name="branch_id" class="mt-1 form-select">
+                <option value="">Todas</option>
+                @foreach($sucursales as $sucursal)
+                    <option value="{{ $sucursal->id }}" @selected(request('branch_id') == $sucursal->id)>{{ $sucursal->name }}</option>
+                @endforeach
+            </select>
+        </label>
+        <div class="flex items-end">
+            <button class="btn-primary w-full justify-center">Aplicar filtros</button>
+        </div>
+    </form>
+
+    {{-- KPI strip --}}
+    <section class="-mx-4 flex gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:px-0 xl:grid-cols-3 2xl:grid-cols-6">
+        <article class="min-w-[235px] flex-none rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:min-w-0 sm:p-5">
+            <div class="flex items-start justify-between">
+                <span class="rounded-xl bg-emerald-50 p-2.5 text-emerald-600"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.8" d="M7 17 17 7M7 7h10v10"/></svg></span>
+                <span class="text-xs text-slate-400">Hoy</span>
             </div>
-            <span class="text-xs text-amber-500 font-600" style="font-weight:600">Pendiente</span>
-        </div>
-        <div>
-            <div class="text-xl font-800 text-gray-900" style="font-weight:800">${{ number_format($stats['total_receivable'], 0) }}</div>
-            <div class="text-xs text-gray-500 font-500" style="font-weight:500">Cuentas x Cobrar</div>
-        </div>
-    </div>
+            <p class="mt-4 text-xs font-medium text-slate-500">Cobrado del Día</p>
+            <p class="mt-1 text-xl font-bold text-slate-900">{{ $dinero($ventasHoy) }}</p>
+            <p class="mt-2 text-xs text-slate-400">Actualización cada 30 min</p>
+        </article>
 
-    {{-- Cobrado este mes --}}
-    <div class="stat-card flex flex-col gap-2 hover:shadow-md transition-shadow cursor-pointer" onclick="window.location='{{ route('admin.payments.index') }}'">
-        <div class="flex items-center justify-between">
-            <div class="kpi-icon" style="background:#f0fdf4">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+        <article class="min-w-[235px] flex-none rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:min-w-0 sm:p-5">
+            <div class="flex items-start justify-between">
+                <span class="rounded-xl bg-blue-50 p-2.5 text-blue-600"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.8" d="M5 20V9m7 11V4m7 16v-7"/></svg></span>
+                <span class="text-xs text-slate-400">{{ $documentos }} docs.</span>
             </div>
-            <span class="trend-up">+{{ now()->locale('es')->isoFormat('MMMM') }}</span>
-        </div>
-        <div>
-            <div class="text-xl font-800 text-gray-900" style="font-weight:800">${{ number_format($stats['collected_month'], 0) }}</div>
-            <div class="text-xs text-gray-500 font-500" style="font-weight:500">Cobrado este mes</div>
-        </div>
-    </div>
+            <p class="mt-4 text-xs font-medium text-slate-500">Facturación del Periodo</p>
+            <p class="mt-1 text-xl font-bold text-slate-900">{{ $dinero($total) }}</p>
+            <p class="mt-2 text-xs {{ $variacionVentas !== null && $variacionVentas >= 0 ? 'text-emerald-600' : 'text-rose-500' }}">
+                {{ $variacionVentas === null ? 'Sin periodo anterior' : (($variacionVentas >= 0 ? '↑ ' : '↓ ').number_format(abs($variacionVentas), 1).'% vs. anterior') }}
+            </p>
+        </article>
 
-    {{-- Facturas a emitir --}}
-    <div class="stat-card flex flex-col gap-2 hover:shadow-md transition-shadow cursor-pointer" onclick="window.location='{{ route('admin.invoices.to-emit') }}'">
-        <div class="flex items-center justify-between">
-            <div class="kpi-icon" style="background:#eff6ff">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/></svg>
+        <article class="min-w-[235px] flex-none rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:min-w-0 sm:p-5">
+            <div class="flex items-start justify-between">
+                <span class="rounded-xl bg-violet-50 p-2.5 text-violet-600"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.8" d="M4 17 9 12l4 4 7-9"/></svg></span>
+                <span class="text-xs text-slate-400">{{ number_format($margen, 1) }}%</span>
             </div>
-            <span class="text-xs text-blue-500 font-600" style="font-weight:600">{{ now()->locale('es')->isoFormat('MMMM') }}</span>
-        </div>
-        <div>
-            <div class="text-2xl font-800 text-gray-900" style="font-weight:800">{{ $stats['invoices_to_emit'] }}</div>
-            <div class="text-xs text-gray-500 font-500" style="font-weight:500">Facturas a Emitir</div>
-        </div>
-    </div>
+            <p class="mt-4 text-xs font-medium text-slate-500">Utilidad Bruta</p>
+            <p class="mt-1 text-xl font-bold text-slate-900">{{ $dinero($utilidad) }}</p>
+            <p class="mt-2 text-xs {{ $variacionUtilidad !== null && $variacionUtilidad >= 0 ? 'text-emerald-600' : 'text-rose-500' }}">
+                {{ $variacionUtilidad === null ? 'Sin periodo anterior' : (($variacionUtilidad >= 0 ? '↑ ' : '↓ ').number_format(abs($variacionUtilidad), 1).'% vs. anterior') }}
+            </p>
+        </article>
 
-    {{-- Clientes vencidos --}}
-    <div class="stat-card flex flex-col gap-2 hover:shadow-md transition-shadow cursor-pointer" onclick="window.location='{{ route('admin.cxc.index') }}?status=overdue'">
-        <div class="flex items-center justify-between">
-            <div class="kpi-icon" style="background:#fef2f2">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><path d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+        <article class="min-w-[235px] flex-none rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:min-w-0 sm:p-5 cursor-pointer" onclick="window.location='{{ route('admin.cxc.index') }}'">
+            <div class="flex items-start justify-between">
+                <span class="rounded-xl bg-amber-50 p-2.5 text-amber-600"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke-width="1.8"/><path stroke-width="1.8" d="M12 8v4l3 2"/></svg></span>
             </div>
-            <span class="text-xs text-red-500 font-600" style="font-weight:600">Bloqueo</span>
-        </div>
-        <div>
-            <div class="text-2xl font-800 text-gray-900" style="font-weight:800">{{ $stats['overdue_clients'] }}</div>
-            <div class="text-xs text-gray-500 font-500" style="font-weight:500">Clientes Vencidos</div>
-        </div>
-    </div>
-</div>
+            <p class="mt-4 text-xs font-medium text-slate-500">Cuentas por Cobrar</p>
+            <p class="mt-1 text-xl font-bold text-slate-900">{{ $dinero($stats['total_receivable']) }}</p>
+            <p class="mt-2 text-xs text-amber-600">{{ $stats['overdue_clients'] }} clientes vencidos</p>
+        </article>
 
-{{-- ─── Mid section ─────────────────────────────────────────────────────────── --}}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-
-    {{-- Overdue clients table (2/3 width) --}}
-    <div class="lg:col-span-2 page-card">
-        <div class="page-card-header">
-            <div>
-                <h2 class="text-sm font-700 text-gray-800" style="font-weight:700">Cuentas Vencidas</h2>
-                <p class="text-xs text-gray-400 mt-0.5">Clientes que requieren atención</p>
+        <article class="min-w-[235px] flex-none rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:min-w-0 sm:p-5 cursor-pointer" onclick="window.location='{{ route('admin.payments.index') }}'">
+            <div class="flex items-start justify-between">
+                <span class="rounded-xl bg-rose-50 p-2.5 text-rose-600"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.8" d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/></svg></span>
             </div>
-            <a href="{{ route('admin.cxc.index') }}?status=overdue" class="btn-secondary btn-xs">Ver todas</a>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Cliente / Sucursal</th>
-                        <th>Factura</th>
-                        <th class="text-right">Saldo</th>
-                        <th class="text-center">Días</th>
-                        <th class="text-center">Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($overdueClients as $cxc)
-                    <tr>
-                        <td>
-                            <div class="font-600 text-gray-800" style="font-weight:600">{{ $cxc->businessGroup->name ?? $cxc->branch->name ?? '—' }}</div>
-                            <div class="text-xs text-gray-400">{{ $cxc->branch->name ?? '' }}</div>
-                        </td>
-                        <td class="text-gray-500 text-xs">{{ $cxc->invoice->invoice_number ?? '—' }}</td>
-                        <td class="text-right font-600" style="font-weight:600;color:{{ $cxc->status==='overdue'?'#dc2626':'#d97706' }}">${{ number_format($cxc->balance, 2) }}</td>
-                        <td class="text-center">
-                            @if($cxc->days_overdue > 0)
-                                <span class="badge badge-red">{{ $cxc->days_overdue }}d</span>
-                            @else
-                                <span class="badge badge-yellow">Al día</span>
-                            @endif
-                        </td>
-                        <td class="text-center">
-                            @php $st = $cxc->status; @endphp
-                            @if($st === 'overdue')  <span class="badge badge-red">Vencido</span>
-                            @elseif($st === 'partial') <span class="badge badge-yellow">Parcial</span>
-                            @elseif($st === 'pending') <span class="badge badge-blue">Pendiente</span>
-                            @else <span class="badge badge-gray">{{ $st }}</span>
-                            @endif
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="text-center py-10">
-                            <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
-                                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="mt-4 text-xs font-medium text-slate-500">Pagos Recibidos</p>
+            <p class="mt-1 text-xl font-bold text-slate-900">{{ $dinero($collectedPeriod) }}</p>
+            <p class="mt-2 text-xs text-rose-500">{{ $stats['pending_payments'] }} pendientes de conciliar</p>
+        </article>
+
+        <article class="min-w-[235px] flex-none rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:min-w-0 sm:p-5">
+            <div class="flex items-start justify-between">
+                <span class="rounded-xl bg-cyan-50 p-2.5 text-cyan-600"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.8" d="M4 20h16V8l-8-4-8 4v12Zm5 0v-6h6v6"/></svg></span>
+            </div>
+            <p class="mt-4 text-xs font-medium text-slate-500">Empresas Activas</p>
+            <p class="mt-1 text-xl font-bold text-slate-900">{{ $stats['groups'] }}</p>
+            <p class="mt-2 text-xs text-emerald-600">{{ $stats['branches'] }} sucursales activas</p>
+        </article>
+    </section>
+
+    {{-- Charts row --}}
+    <section class="grid gap-6 xl:grid-cols-2">
+        <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="font-bold text-slate-900">Facturación por Sucursal</h2>
+                    <p class="mt-1 text-xs text-slate-400">{{ $etiquetaPeriodo }}</p>
+                </div>
+                <span class="rounded-lg bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-500">{{ $ventasPorSucursal->count() }} sucursales</span>
+            </div>
+            <div class="mt-6 grid gap-8 md:grid-cols-[220px_1fr] md:items-center">
+                <div class="relative mx-auto h-48 w-48 rounded-full" style="background: {{ $fondoDona }}">
+                    <div class="absolute inset-9 flex flex-col items-center justify-center rounded-full bg-white text-center shadow-inner">
+                        <span class="text-xl font-bold text-slate-900">{{ $dinero($total) }}</span>
+                        <span class="mt-1 text-xs text-slate-400">Total</span>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    @forelse($ventasPorSucursal as $indice => $sucursal)
+                        @php $porcentaje = $total > 0 ? ((float) $sucursal->total / $total) * 100 : 0; @endphp
+                        <div class="grid grid-cols-[1fr_auto_auto] items-center gap-3 text-sm">
+                            <div class="flex min-w-0 items-center gap-2">
+                                <span class="h-2.5 w-2.5 shrink-0 rounded-full" style="background: {{ $colores[$indice % count($colores)] }}"></span>
+                                <span class="truncate text-slate-600">{{ $sucursal->nombre }}</span>
                             </div>
-                            <p class="text-sm text-gray-400">Sin cuentas vencidas</p>
-                        </td>
-                    </tr>
+                            <span class="font-semibold text-slate-800">{{ $dinero($sucursal->total) }}</span>
+                            <span class="w-12 text-right text-xs text-slate-400">{{ number_format($porcentaje, 1) }}%</span>
+                        </div>
+                    @empty
+                        <div class="rounded-xl bg-slate-50 p-5 text-center text-sm text-slate-500">Aún no hay facturas emitidas para este periodo.</div>
                     @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+                </div>
+            </div>
+        </article>
 
-    {{-- Quick actions (1/3 width) --}}
-    <div class="page-card">
-        <div class="page-card-header">
-            <h2 class="text-sm font-700 text-gray-800" style="font-weight:700">Acciones Rápidas</h2>
-        </div>
-        <div class="p-4 flex flex-col gap-2">
-            <a href="{{ route('admin.grupos.create') }}" class="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-indigo-50 hover:border-indigo-200 transition-colors group">
-                <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
-                </div>
+        <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
                 <div>
-                    <div class="text-xs font-600 text-gray-700" style="font-weight:600">Nuevo Grupo</div>
-                    <div class="text-[10px] text-gray-400">Crear grupo empresarial</div>
+                    <h2 class="font-bold text-slate-900">Top Planes Contratados</h2>
+                    <p class="mt-1 text-xs text-slate-400">Ordenado por valor</p>
                 </div>
-            </a>
-            <a href="{{ route('admin.sucursales.create') }}" class="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-green-50 hover:border-green-200 transition-colors">
-                <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                <span class="rounded-lg bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-500">{{ $etiquetaPeriodo }}</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-400">
+                        <tr>
+                            <th class="px-6 py-3">Plan / Servicio</th>
+                            <th class="px-4 py-3 text-right">Contratos</th>
+                            <th class="px-6 py-3 text-right">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($topPlanes as $plan)
+                            <tr>
+                                <td class="px-6 py-3.5">
+                                    <div class="font-medium text-slate-800">{{ $plan->nombre }}</div>
+                                    <div class="text-xs text-slate-400">{{ $plan->pro_codigo }}</div>
+                                </td>
+                                <td class="px-4 py-3.5 text-right text-slate-600">{{ number_format((float) $plan->cantidad, 0) }}</td>
+                                <td class="px-6 py-3.5 text-right font-semibold text-slate-800">{{ $dinero($plan->venta) }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-12 text-center text-slate-500">Los planes aparecerán cuando haya servicios contratados.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </section>
+
+    {{-- Bottom row --}}
+    <section class="grid gap-6 xl:grid-cols-[1.15fr_.85fr]">
+        <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <h2 class="font-bold text-slate-900">Resumen Financiero</h2>
+                <span class="rounded-lg bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-500">{{ $etiquetaPeriodo }}</span>
+            </div>
+            <div class="mt-6 grid gap-8 md:grid-cols-[1fr_230px] md:items-center">
+                <dl class="divide-y divide-slate-100 text-sm">
+                    <div class="flex justify-between py-3"><dt class="font-medium text-slate-600">Total Facturado</dt><dd class="font-bold text-emerald-600">{{ $dinero($total) }}</dd></div>
+                    <div class="flex justify-between py-3"><dt class="font-medium text-slate-600">Total Cobrado</dt><dd class="font-bold text-emerald-600">{{ $dinero($collectedPeriod) }}</dd></div>
+                    <div class="flex justify-between py-3"><dt class="font-medium text-slate-600">Por Cobrar</dt><dd class="font-bold text-amber-600">{{ $dinero($stats['total_receivable']) }}</dd></div>
+                    <div class="flex justify-between py-3"><dt class="font-medium text-slate-600">Utilidad Bruta</dt><dd class="font-bold text-emerald-600">{{ $dinero($utilidad) }}</dd></div>
+                    <div class="flex justify-between py-3"><dt class="font-bold text-slate-800">Facturas a Emitir</dt><dd class="font-medium text-blue-600">{{ $stats['invoices_to_emit'] }} este mes</dd></div>
+                </dl>
+                <div class="relative mx-auto flex h-44 w-44 items-center justify-center rounded-full" style="background: conic-gradient(#22c55e 0 {{ min(100, max(0, $margen)) }}%, #e2e8f0 {{ min(100, max(0, $margen)) }}% 100%)">
+                    <div class="flex h-32 w-32 flex-col items-center justify-center rounded-full bg-white shadow-inner">
+                        <span class="text-3xl font-bold text-slate-900">{{ number_format($margen, 1) }}%</span>
+                        <span class="mt-1 text-xs text-slate-400">Margen bruto</span>
+                    </div>
                 </div>
+            </div>
+        </article>
+
+        <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
                 <div>
-                    <div class="text-xs font-600 text-gray-700" style="font-weight:600">Nueva Sucursal</div>
-                    <div class="text-[10px] text-gray-400">Crear punto de atención</div>
+                    <h2 class="font-bold text-slate-900">Alertas y Notificaciones</h2>
+                    <p class="mt-1 text-xs text-slate-400">Operaciones que requieren atención</p>
                 </div>
-            </a>
-            <a href="{{ route('admin.invoices.to-emit') }}" class="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
-                <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/></svg>
-                </div>
-                <div>
-                    <div class="text-xs font-600 text-gray-700" style="font-weight:600">Emitir Facturas</div>
-                    <div class="text-[10px] text-gray-400">Facturación del mes</div>
-                </div>
-            </a>
-            <a href="{{ route('admin.cxc.index') }}" class="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-amber-50 hover:border-amber-200 transition-colors">
-                <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div>
-                    <div class="text-xs font-600 text-gray-700" style="font-weight:600">Ver CxC</div>
-                    <div class="text-[10px] text-gray-400">Cuentas por cobrar</div>
-                </div>
-            </a>
-            <a href="{{ route('admin.reports.financial') }}" class="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-purple-50 hover:border-purple-200 transition-colors">
-                <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
-                </div>
-                <div>
-                    <div class="text-xs font-600 text-gray-700" style="font-weight:600">Ver Reportes</div>
-                    <div class="text-[10px] text-gray-400">Financiero y atención</div>
-                </div>
-            </a>
-        </div>
-    </div>
+                <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-600">{{ $alertas->count() }}</span>
+            </div>
+            <div class="divide-y divide-slate-100">
+                @forelse($alertas as $alerta)
+                    @php
+                        $clase = match($alerta['tipo']) {
+                            'danger' => 'bg-rose-50 text-rose-600',
+                            'warning' => 'bg-amber-50 text-amber-600',
+                            default => 'bg-blue-50 text-blue-600',
+                        };
+                    @endphp
+                    <div class="flex items-center gap-3 px-6 py-4">
+                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {{ $clase }}">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 8v4m0 4h.01M4.9 19h14.2a2 2 0 0 0 1.73-3L13.73 4a2 2 0 0 0-3.46 0L3.17 16a2 2 0 0 0 1.73 3Z"/></svg>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-medium text-slate-700">{{ $alerta['texto'] }}</p>
+                            <p class="mt-0.5 text-xs text-slate-400">{{ $alerta['fecha']->locale('es')->diffForHumans() }}</p>
+                        </div>
+                    </div>
+                @empty
+                    <div class="px-6 py-12 text-center">
+                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="m5 12 4 4L19 6"/></svg>
+                        </div>
+                        <p class="mt-3 text-sm font-medium text-slate-700">Todo está al día</p>
+                        <p class="mt-1 text-xs text-slate-400">No hay alertas activas.</p>
+                    </div>
+                @endforelse
+            </div>
+        </article>
+    </section>
+
+    <footer class="flex flex-col gap-1 border-t border-slate-200 pt-4 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <span>El dashboard se recarga automáticamente cada 30 minutos.</span>
+        <span>Última sincronización: {{ $ultimaSincronizacion ? \Carbon\Carbon::parse($ultimaSincronizacion)->format('d/m/Y H:i') : 'sin datos' }}</span>
+    </footer>
 </div>
 
-{{-- ─── Bottom section ──────────────────────────────────────────────────────── --}}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-    {{-- Financial summary --}}
-    <div class="page-card">
-        <div class="page-card-header">
-            <div>
-                <h2 class="text-sm font-700 text-gray-800" style="font-weight:700">Resumen Financiero</h2>
-                <p class="text-xs text-gray-400">{{ now()->locale('es')->isoFormat('MMMM YYYY') }}</p>
-            </div>
-        </div>
-        <div class="p-5">
-            @php
-                $total_r = $stats['total_receivable'];
-                $collected = $stats['collected_month'];
-                $pct = ($total_r + $collected) > 0 ? round($collected / ($total_r + $collected) * 100) : 0;
-            @endphp
-            <div class="flex items-center gap-6">
-                {{-- Donut --}}
-                <div class="relative flex-shrink-0">
-                    <svg width="100" height="100" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="38" fill="none" stroke="#f3f4f6" stroke-width="12"/>
-                        <circle class="donut-ring" cx="50" cy="50" r="38" fill="none" stroke="#4f46e5" stroke-width="12"
-                            stroke-dasharray="{{ $pct * 2.39 }} 239"
-                            stroke-linecap="round"/>
-                    </svg>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span class="text-lg font-800 text-gray-900" style="font-weight:800">{{ $pct }}%</span>
-                        <span class="text-[9px] text-gray-400">Cobrado</span>
-                    </div>
-                </div>
-                {{-- Stats --}}
-                <div class="flex-1 space-y-3">
-                    <div class="flex justify-between items-center py-1 border-b border-gray-50">
-                        <span class="text-xs text-gray-500">Total por cobrar</span>
-                        <span class="text-sm font-600 text-gray-800" style="font-weight:600">${{ number_format($total_r, 2) }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-1 border-b border-gray-50">
-                        <span class="text-xs text-gray-500">Cobrado este mes</span>
-                        <span class="text-sm font-600 text-green-600" style="font-weight:600">${{ number_format($collected, 2) }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-1 border-b border-gray-50">
-                        <span class="text-xs text-gray-500">Clientes vencidos</span>
-                        <span class="text-sm font-600 text-red-500" style="font-weight:600">{{ $stats['overdue_clients'] }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-1">
-                        <span class="text-xs text-gray-500">Clientes bloqueados</span>
-                        <span class="text-sm font-600 text-orange-500" style="font-weight:600">{{ $stats['blocked_clients'] }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Recent activity --}}
-    <div class="page-card">
-        <div class="page-card-header">
-            <div>
-                <h2 class="text-sm font-700 text-gray-800" style="font-weight:700">Alertas y Notificaciones</h2>
-                <p class="text-xs text-gray-400">Operaciones que requieren atención</p>
-            </div>
-            <span class="badge badge-blue">{{ $stats['overdue_clients'] + $stats['blocked_clients'] }}</span>
-        </div>
-        <div class="p-4 space-y-2">
-            @if($stats['invoices_to_emit'] > 0)
-            <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                <div class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div>
-                    <div class="text-xs font-600 text-blue-700" style="font-weight:600">{{ $stats['invoices_to_emit'] }} facturas pendientes de emitir</div>
-                    <div class="text-[11px] text-blue-400 mt-0.5">Revisar facturas del mes</div>
-                </div>
-            </div>
-            @endif
-            @if($stats['overdue_clients'] > 0)
-            <div class="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
-                <div class="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-                </div>
-                <div>
-                    <div class="text-xs font-600 text-red-700" style="font-weight:600">{{ $stats['overdue_clients'] }} clientes con deuda vencida</div>
-                    <div class="text-[11px] text-red-400 mt-0.5">Gestionar cobros</div>
-                </div>
-            </div>
-            @endif
-            @if($stats['blocked_clients'] > 0)
-            <div class="flex items-start gap-3 p-3 bg-orange-50 rounded-lg">
-                <div class="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-                </div>
-                <div>
-                    <div class="text-xs font-600 text-orange-700" style="font-weight:600">{{ $stats['blocked_clients'] }} sucursales bloqueadas</div>
-                    <div class="text-[11px] text-orange-400 mt-0.5">Revisar bloqueos activos</div>
-                </div>
-            </div>
-            @endif
-            @if($stats['total_receivable'] > 0)
-            <div class="flex items-start gap-3 p-3 bg-amber-50 rounded-lg">
-                <div class="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 9v1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div>
-                    <div class="text-xs font-600 text-amber-700" style="font-weight:600">Falta integrar API de pagos</div>
-                    <div class="text-[11px] text-amber-400 mt-0.5">Configurar pasarela</div>
-                </div>
-            </div>
-            @endif
-            @if($stats['invoices_to_emit'] === 0 && $stats['overdue_clients'] === 0 && $stats['blocked_clients'] === 0)
-            <div class="text-center py-8">
-                <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
-                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <p class="text-sm text-gray-400">Todo al día</p>
-            </div>
-            @endif
-        </div>
-    </div>
-</div>
-
-<p class="text-center text-xs text-gray-300 mt-6">El dashboard se recarga automáticamente cada 30 minutos · Última sincronización: {{ now()->format('d/m/Y H:i') }}</p>
+<script>window.setTimeout(() => window.location.reload(), 30 * 60 * 1000);</script>
 @endsection
