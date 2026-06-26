@@ -19,7 +19,7 @@ fi
   echo "APP_NAME=${APP_NAME:-ASOIINFO Platform}"
   echo "APP_ENV=${APP_ENV:-production}"
   echo "APP_KEY=$APP_KEY"
-  echo "APP_DEBUG=false"
+  echo "APP_DEBUG=true"
   echo "APP_URL=${APP_URL:-https://asoiinfo-platform-1.onrender.com}"
   echo "LOG_CHANNEL=${LOG_CHANNEL:-stderr}"
   echo "LOG_LEVEL=error"
