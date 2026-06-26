@@ -15,7 +15,7 @@ fi
 
 # ── 2. Write .env ─────────────────────────────────────────────────────────────
 cat > .env <<ENVEOF
-APP_NAME=${APP_NAME:-ASOIINFO Platform}
+APP_NAME="${APP_NAME:-ASOIINFO Platform}"
 APP_ENV=${APP_ENV:-production}
 APP_KEY=$APP_KEY
 APP_DEBUG=true
