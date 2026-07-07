@@ -8,7 +8,8 @@ use App\Http\Controllers\Admin\{
     BranchController, ContactController, PlanController,
     ContractedServiceController, CxcController, ReportController,
     ComingSoonController, UserController, InvoiceController,
-    AuditLogController, TwoFactorController
+    AuditLogController, TwoFactorController, ChatbotController,
+    WhatsAppIntegrationController
 };
 
 // ─── Public ───────────────────────────────────────────────────────────────────
@@ -83,14 +84,16 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Milestone Excel download
     Route::get('milestone-plan', [ComingSoonController::class, 'downloadMilestone'])->name('milestone-download');
 
-    // ── M3: WhatsApp (Coming Soon) ────────────────────────────────────────────
-    Route::get('chatbot', [ComingSoonController::class, 'whatsapp'])->name('chatbot.index');
-    Route::post('chatbot/{conversation}/attend',   fn() => back())->name('chatbot.attend');
-    Route::post('chatbot/{conversation}/close',    fn() => back())->name('chatbot.close');
-    Route::post('chatbot/{conversation}/send',     fn() => back())->name('chatbot.send');
-    Route::post('chatbot/{conversation}/convert',  fn() => back())->name('chatbot.convert');
-    Route::post('chatbot/{conversation}/transfer', fn() => back())->name('chatbot.transfer');
+    // ── M3: WhatsApp ────────────────────────────────────────────────────────────
+    Route::get('chatbot', [ChatbotController::class, 'index'])->name('chatbot.index');
+    Route::post('chatbot/{conversation}/attend',   [ChatbotController::class, 'attend'])->name('chatbot.attend');
+    Route::post('chatbot/{conversation}/close',    [ChatbotController::class, 'close'])->name('chatbot.close');
+    Route::post('chatbot/{conversation}/send',     [ChatbotController::class, 'send'])->name('chatbot.send');
+    Route::post('chatbot/{conversation}/convert',  [ChatbotController::class, 'convertProspect'])->name('chatbot.convert');
+    Route::post('chatbot/{conversation}/transfer', [ChatbotController::class, 'transfer'])->name('chatbot.transfer');
 
-    // ── Integraciones ─────────────────────────────────────────────────────────
-    Route::get('integraciones', [ComingSoonController::class, 'ai'])->name('integrations.index');
+    // ── Integraciones WhatsApp (Meta Embedded Signup / coexistencia) ───────────
+    Route::get('integraciones', [WhatsAppIntegrationController::class, 'index'])->name('integrations.index');
+    Route::post('integraciones/whatsapp/connect', [WhatsAppIntegrationController::class, 'connectCoexistence'])->name('integrations.connect');
+    Route::delete('integraciones/whatsapp/{number}', [WhatsAppIntegrationController::class, 'disconnect'])->name('integrations.disconnect');
 });

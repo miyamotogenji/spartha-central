@@ -94,6 +94,12 @@
             </div>
 
             <div>
+                <p class="px-4 mb-2 text-xs uppercase tracking-wider text-slate-500">WhatsApp</p>
+                <a href="{{ route('admin.chatbot.index') }}" class="nav-item {{ request()->routeIs('admin.chatbot.*') ? 'active' : '' }}">💬 <span>Chatbot CRM</span></a>
+                <a href="{{ route('admin.integrations.index') }}" class="nav-item {{ request()->routeIs('admin.integrations.*') ? 'active' : '' }}">🔗 <span>Integraciones</span></a>
+            </div>
+
+            <div>
                 <p class="px-4 mb-2 text-xs uppercase tracking-wider text-slate-500">Administración</p>
                 <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">👤 <span>Usuarios</span></a>
                 <a href="{{ route('admin.two-factor.show') }}" class="nav-item {{ request()->routeIs('admin.two-factor.*') ? 'active' : '' }}">🔐 <span>Seguridad 2FA</span></a>
